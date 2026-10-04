@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudMart Store</title>
+    <style>
+        :root {
+            --bg-dark: #1e293b;
+            --primary: #3b82f6;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f8fafc; color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; }
+
+        /* Navbar */
+        .navbar { background: var(--bg-dark); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.4rem; font-weight: bold; }
+        .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+        .nav-links a { color: #cbd5e1; text-decoration: none; }
+        .btn-owner { background-color: var(--accent); color: #000; border: none; padding: 0.5rem 1rem; font-weight: bold; border-radius: 6px; cursor: pointer; }
+
+        /* Layout */
+        .container { display: flex; flex: 1; padding: 2rem; gap: 2rem; max-width: 1400px; margin: 0 auto; width: 100%; }
+
+        /* Sidebar */
+        .sidebar { width: 280px; background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); height: fit-content; }
+        .filter-group { margin-bottom: 1.5rem; }
+        .filter-group h4 { margin-bottom: 0.8rem; font-size: 1rem; }
+        .filter-group label { display: block; margin-bottom: 0.4rem; color: var(--text-muted); font-size: 0.9rem; cursor: pointer; }
+        .price-range { width: 100%; }
+
+        /* Main Content */
+        .main-content { flex: 1; }
+        .search-bar { width: 100%; padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 1.5rem; font-size: 1rem; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.5rem; }
+
+        /* Product Cards */
+        .card { background: var(--card-bg); border-radius: 10px; padding: 1.2rem; border: 1px solid #e2e8f0; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; justify-content: space-between; }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .card h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+        .price { font-size: 1.3rem; color: var(--success); font-weight: bold; margin-bottom: 0.5rem; }
+        .badge { background: #dcfce7; color: #166534; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: bold; width: fit-content; margin-bottom: 0.8rem; }
+        .btn-add { background: var(--primary); color: white; border: none; padding: 0.6rem; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; }
+        .btn-add:hover { background: #2563eb; }
+
+        .no-results { grid-column: 1 / -1; text-align: center; color: var(--text-muted); font-size: 1.1rem; padding: 2rem; }
+
+        /* Footer */
+        .footer { background: var(--bg-dark); color: #94a3b8; text-align: center; padding: 1.5rem; margin-top: auto; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">☁️ CloudMart Store</div>
+        <div class="nav-links">
+            <a href="#">Home</a>
+            <a href="#">Categories</a>
+            <a href="#">Cart <span id="cart-count">(0)</span> 🛒</a>
+            <button class="btn-owner">🔒 Owner Login</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Sidebar Filters -->
+        <aside class="sidebar">
+            <div class="filter-group">
+                <h4>Categories</h4>
+                <label><input type="checkbox" class="category-filter" value="Hardware"> Computer Hardware</label>
+                <label><input type="checkbox" class="category-filter" value="Peripherals"> Peripherals</label>
+                <label><input type="checkbox" class="category-filter" value="Accessories"> Accessories</label>
+            </div>
+            <div class="filter-group">
+                <h4>Max Price: <span id="price-display">$300</span></h4>
+                <input type="range" id="price-slider" class="price-range" min="0" max="300" value="300">
+            </div>
+        </aside>
+
+        <!-- Main Product Area -->
+        <main class="main-content">
+            <input type="text" id="search-input" class="search-bar" placeholder="🔍 Search products by name...">
+            <div class="product-grid" id="product-grid">
+                <!-- Products render dynamically -->
+            </div>
+        </main>
+    </div>
+
+    <footer class="footer">
+        <p>CloudMart Store © 2026 | Deployed on AWS S3 & CloudFront</p>
+    </footer>
+
+    <script>
+        const products = [
+            { id: 101, name: "Thermal Paste 4g Tube", price: 8.50, stock: 160, category: "Accessories" },
+            { id: 102, name: "Smartwatch Fitness Tracker", price: 129.99, stock: 40, category: "Peripherals" },
+            { id: 103, name: "27-Inch Gaming Monitor", price: 299.99, stock: 15, category: "Hardware" },
+            { id: 104, name: "Mechanical Keyboard", price: 89.99, stock: 70, category: "Peripherals" },
+            { id: 105, name: "Cable Zip Ties 100 Pack", price: 6.50, stock: 250, category: "Accessories" },
+            { id: 106, name: "Bluetooth Desk Speaker", price: 35.99, stock: 45, category: "Peripherals" },
+            { id: 107, name: "HD Webcam 1080p", price: 45.50, stock: 90, category: "Peripherals" },
+            { id: 108, name: "External SSD 1TB", price: 115.00, stock: 30, category: "Hardware" }
+        ];
+
+        let cartCount = 0;
+
+        function renderProducts() {
+            const grid = document.getElementById("product-grid");
+            const searchVal = document.getElementById("search-input").value.toLowerCase();
+            const sliderVal = parseFloat(document.getElementById("price-slider").value);
+            
+            // Display "Any Price" if slider is at 0 so user knows all items show
+            document.getElementById("price-display").innerText = sliderVal === 0 ? "Any Price (Show All)" : `$${sliderVal}`;
+
+            // Get selected categories
+            const selectedCategories = Array.from(document.querySelectorAll('.category-filter:checked'))
+                                            .map(cb => cb.value);
+
+            // Filter logic with Smart Defaults
+            const filtered = products.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(searchVal);
+                
+                // FALLBACK 1: If price slider is set to 0, show ALL prices
+                const matchesPrice = (sliderVal === 0) || (p.price <= sliderVal);
+                
+                // FALLBACK 2: If NO categories checked, show ALL categories
+                const matchesCategory = (selectedCategories.length === 0) || selectedCategories.includes(p.category);
+                
+                return matchesSearch && matchesPrice && matchesCategory;
+            });
+
+            grid.innerHTML = "";
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="no-results">No products match your typed search query.</div>`;
+                return;
+            }
+
+            filtered.forEach(p => {
+                const card = document.createElement("div");
+                card.className = "card";
+                card.innerHTML = `
+                    <div>
+                        <h3>${p.name}</h3>
+                        <div class="price">$${p.price.toFixed(2)}</div>
+                        <div class="badge">In Stock: ${p.stock}</div>
+                    </div>
+                    <button class="btn-add" onclick="addToCart()">Add to Cart 🛒</button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function addToCart() {
+            cartCount++;
+            document.getElementById("cart-count").innerText = `(${cartCount})`;
+        }
+
+        document.getElementById("search-input").addEventListener("input", renderProducts);
+        
+        document.getElementById("price-slider").addEventListener("input", renderProducts);
+
+        document.querySelectorAll(".category-filter").forEach(cb => {
+            cb.addEventListener("change", renderProducts);
+        });
+
+        // Initial Page Render
+        renderProducts();
+    </script>
+</body>
+</html>
